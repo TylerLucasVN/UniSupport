@@ -1,88 +1,54 @@
-# TEAM CHARTER
+# TEAM CHARTER (BẢN ĐIỀU LỆ NHÓM)
 
-## UniSupport - Student Support Management System
-
----
-
-# I. Tổng quan và Bối cảnh
-
-## 1. Bối cảnh & Tuyên bố vấn đề
-
-### Bối cảnh
-
-Aurora University hiện phục vụ khoảng **3.000 sinh viên**.
-
-Quy trình tiếp nhận các yêu cầu hỗ trợ như:
-
-- Hành chính
-- Học tập
-- Cơ sở vật chất
-- Các vấn đề hỗ trợ sinh viên khác
-
-hiện đang bị phân tán qua nhiều kênh:
-
-- Email
-- Microsoft Forms
-- Tin nhắn cá nhân
-
-### Vấn đề cốt lõi
-
-- Thông tin có nguy cơ bị **thất lạc**.
-- Thời gian phản hồi chậm, trung bình khoảng **3–5 ngày**.
-- Sinh viên không thể biết **ai đang xử lý yêu cầu của mình**.
-- Nhân viên có thể **xử lý trùng lặp hoặc bỏ sót công việc** do không có hệ thống điều phối tập trung.
-- Ban Quản lý không có dữ liệu tổng hợp để **đánh giá hiệu suất phục vụ của các phòng ban**.
+**Dự án: UniSupport - Student Support Management System**
 
 ---
 
-## 2. Giải pháp tổng thể
+# PHẦN I: TỔNG QUAN VÀ BỐI CẢNH (CONTEXT & STRATEGY)
 
-Xây dựng **Web Application UniSupport** nhằm tập trung hóa luồng giao tiếp và xử lý yêu cầu giữa **Sinh viên** và **Nhà trường**.
+## 1. Bối cảnh & Tuyên bố vấn đề (Context & Problem Statement)
 
-### Luồng xử lý tổng quát
+**Bối cảnh:** Aurora University hiện phục vụ khoảng **3.000 sinh viên**. Quy trình tiếp nhận yêu cầu hỗ trợ (hành chính, học tập, cơ sở vật chất...) đang phân tán qua **Email, Microsoft Forms, tin nhắn cá nhân**.
+
+**Vấn đề cốt lõi:**
+
+- Thất lạc thông tin, phản hồi chậm (trung bình **3–5 ngày**).
+- Sinh viên không thể tra cứu ai đang xử lý đơn của mình.
+- Nhân viên trùng lặp hoặc bỏ sót công việc do không có công cụ điều phối tập trung.
+- Ban Quản lý không có số liệu để đánh giá hiệu suất phục vụ của các phòng ban.
+
+---
+
+## 2. Giải pháp tổng thể (Proposed Solution)
+
+Xây dựng hệ thống **Web Application UniSupport** tập trung hóa luồng giao tiếp giữa Sinh viên và Nhà trường.
+
+**Kiến trúc luồng:**
 
 ```text
 Sinh viên gửi Ticket
         ↓
-Hệ thống đưa Ticket vào Queue của Phòng ban
+Hệ thống điều phối về Queue Phòng ban
         ↓
-Nhân viên tiếp nhận và xử lý
+Nhân viên xử lý & Phản hồi
         ↓
-Phản hồi / yêu cầu bổ sung nếu cần
-        ↓
-Hoàn thành Ticket
-        ↓
-Sinh viên đánh giá chất lượng dịch vụ
+Đóng Ticket & Đánh giá
 ```
 
 ---
 
-## 3. Nguyên tắc phát triển mở rộng
+## 3. Nguyên tắc phát triển mở rộng (Extensibility Principles)
 
-### Không làm vỡ tính năng cũ
-
-Các module sau chỉ:
-
-- `consume` dữ liệu từ module trước
-- hoặc `extend` chức năng dựa trên dữ liệu đã tồn tại
-
-Không thay đổi logic cốt lõi theo cách gây ảnh hưởng đến các module đã hoàn thành.
-
-### Single Source of Truth
-
-Bảng `Tickets` là nguồn dữ liệu trung tâm của hệ thống.
-
-Trạng thái Ticket chỉ được thay đổi theo **Ticket State Machine** đã định nghĩa.
-
-Không được ghi đè hoặc xóa dữ liệu lịch sử xử lý Ticket.
+- **Không làm vỡ tính năng cũ:** Các Module sau chỉ tiêu thụ (consume) hoặc mở rộng (extend) dữ liệu từ Module trước.
+- **Single Source of Truth:** Bảng `Tickets` là trung tâm. Trạng thái Ticket chỉ chuyển dịch qua lại theo Sơ đồ trạng thái chuẩn (State Machine), không ghi đè dữ liệu lịch sử.
 
 ---
 
-# II. Tiêu chuẩn kỹ thuật và Quy tắc dữ liệu
+# PHẦN II: TIÊU CHUẨN KỸ THUẬT VÀ QUY TẮC DỮ LIỆU (TECHNICAL RULES)
 
-## 1. Data Conventions
+## 1. Quy tắc định danh và định dạng Dữ liệu (Data Conventions)
 
-### Ticket ID
+### Mã Ticket ID
 
 Định dạng:
 
@@ -96,610 +62,354 @@ Ví dụ:
 TK-20261001-0042
 ```
 
-Trong đó:
+Tự động tăng trong ngày.
 
-- `YYYYMMDD`: ngày tạo Ticket
-- `XXXX`: số thứ tự tự động tăng trong ngày
+### Quy định File đính kèm
 
----
+- Định dạng cho phép: `.png`, `.jpg`, `.jpeg`, `.pdf`.
+- Dung lượng tối đa: **5MB / tệp**.
+- Tối đa **3 tệp / lần gửi**.
 
-### File đính kèm
+### Phân quyền dữ liệu (Data Isolation)
 
-Các định dạng được phép:
+**Sinh viên** chỉ có quyền `READ` các Ticket do chính tài khoản đó tạo:
 
 ```text
-.png
-.jpg
-.jpeg
-.pdf
+created_by = current_user
 ```
 
-Giới hạn:
-
-- Tối đa **5 MB / file**
-- Tối đa **3 file / lần gửi**
-
----
-
-### Data Isolation
-
-#### Sinh viên
-
-Sinh viên chỉ được phép `READ` các Ticket do chính tài khoản đó tạo.
+**Nhân viên** chỉ có quyền `READ/WRITE` các Ticket thuộc Phòng ban của mình:
 
 ```text
-created_by = current_user.id
-```
-
-#### Nhân viên
-
-Nhân viên chỉ được phép `READ / WRITE` các Ticket thuộc phòng ban của mình.
-
-```text
-department_id = current_user.department_id
+department_id = user.department_id
 ```
 
 ---
 
-## 2. Ticket State Machine
+## 2. Sơ đồ chuyển đổi Trạng thái Ticket (Ticket State Machine)
 
-Mọi chức năng xử lý Ticket phải tuân thủ các trạng thái và chuyển đổi sau:
-
-```mermaid
-stateDiagram-v2
-    [*] --> PENDING
-
-    PENDING --> PROCESSING: Nhân viên tiếp nhận
-    PENDING --> PENDING: Chuyển phòng ban
-
-    PROCESSING --> WAITING_FOR_STUDENT: Yêu cầu bổ sung
-    PROCESSING --> RESOLVED: Hoàn thành xử lý
-    PROCESSING --> PENDING: Chuyển phòng ban
-
-    WAITING_FOR_STUDENT --> PROCESSING: Sinh viên bổ sung thông tin
-    WAITING_FOR_STUDENT --> CLOSED: Không phản hồi quá 7 ngày
-
-    RESOLVED --> [*]
-    CLOSED --> [*]
-```
-
-### Mapping trạng thái
-
-| Status | Hiển thị |
-|---|---|
-| `PENDING` | Chờ tiếp nhận |
-| `PROCESSING` | Đang xử lý |
-| `WAITING_FOR_STUDENT` | Chờ bổ sung |
-| `RESOLVED` | Hoàn thành |
-| `CLOSED` | Đã đóng |
-
-### Auto-close Rule
-
-Nếu Ticket ở trạng thái:
+Mọi chức năng xử lý Ticket phải tuân thủ nghiêm ngặt các chuyển dịch trạng thái sau:
 
 ```text
-WAITING_FOR_STUDENT
+[Chờ tiếp nhận] ──(Nhân viên nhận)──> [Đang xử lý] ──(Nội dung OK)──> [Hoàn thành]
+       │                                      │
+       │                                      ├──(Thiếu hs)──> [Chờ bổ sung]
+       │                                      │                     │
+       │                                      │             (SV gửi bổ sung)
+       │                                      │                     │
+       └──(Chuyển phòng)──> [Chờ tiếp nhận] <───────────────────────┘
 ```
 
-quá **7 ngày / 168 giờ** mà không có tương tác mới từ Sinh viên, hệ thống tự động chuyển sang:
-
-```text
-CLOSED
-```
-
-Việc đóng Ticket được thực hiện bởi **System Job**.
+**Auto-close Rule:** Ticket ở trạng thái **Chờ bổ sung** quá **7 ngày (168 giờ)** không có tương tác từ Sinh viên sẽ tự động chuyển sang **Đã đóng (Closed)** bởi **System Job**.
 
 ---
 
-# III. Đặc tả chức năng
+# PHẦN III: ĐẶC TẢ CHỨC NĂNG CHI TIẾT (MODULE BY MODULE)
 
-# Module 1: Authentication Base
+# MODULE 1: NỀN TẢNG XÁC THỰC (AUTHENTICATION BASE)
 
-Module xác thực là nền tảng cho toàn bộ hệ thống.
+Chức năng này làm nền tảng cho toàn bộ hệ thống.
 
----
+## 1.1. Đăng nhập hệ thống (Login)
 
-## 1.1. Đăng nhập hệ thống
-
-### User Story
-
-> Là người dùng gồm Sinh viên, Nhân viên hoặc Quản lý, tôi muốn đăng nhập bằng Email và Mật khẩu do trường cấp để truy cập đúng không gian làm việc của mình.
+**User Stories:** Là người dùng (Sinh viên, Nhân viên, Quản lý), tôi muốn đăng nhập bằng Email và Mật khẩu do trường cấp để truy cập đúng không gian làm việc của mình.
 
 ### Input Validation
 
-| Field | Required | Validation |
-|---|---:|---|
-| `email` | Yes | Đúng định dạng email `@aurora.edu.vn` |
-| `password` | Yes | Độ dài từ `6–32` ký tự |
-
-### Acceptance Criteria
-
-#### AC 1.1
-
-Đăng nhập thành công:
-
-- Trả về `JWT Token`
-- Lưu thông tin `Role`
-- Điều hướng theo Role
-
-| Role | Destination |
+| Trường | Điều kiện |
 |---|---|
-| Student | Trang gửi Ticket |
-| Staff | Queue phòng ban |
-| Manager | Dashboard |
+| `email` | Required, đúng định dạng Email (`@aurora.edu.vn`) |
+| `password` | Required, độ dài từ 6–32 ký tự |
 
-#### AC 1.2
+### Acceptance Criteria (AC)
 
-Nếu:
+**AC 1.1:** Đăng nhập thành công trả về `JWT Token`, lưu Role người dùng và điều hướng đúng Màn hình chính:
 
-- Email không tồn tại
-- hoặc mật khẩu không chính xác
+- Sinh viên → Trang gửi đơn.
+- Nhân viên → Queue phòng ban.
+- Quản lý → Dashboard.
 
-hiển thị:
-
-```text
-Thông tin đăng nhập không chính xác
-```
-
-#### AC 1.3
-
-Nếu nhập sai mật khẩu **5 lần liên tiếp**:
-
-- Khóa tài khoản tạm thời
-- Thời gian khóa: **15 phút**
-
----
-
-## 1.2. Đổi mật khẩu
-
-### User Story
-
-> Là người dùng đã đăng nhập, tôi muốn chủ động thay đổi mật khẩu cá nhân để đảm bảo an toàn tài khoản.
-
-### Acceptance Criteria
-
-#### AC 2.1
-
-Người dùng phải nhập:
-
-- Mật khẩu cũ
-- Mật khẩu mới
-- Xác nhận mật khẩu mới
-
-#### AC 2.2
-
-Mật khẩu mới không được trùng với mật khẩu cũ.
-
----
-
-# Module 2: Student Workspace
-
-Module dành cho Sinh viên, mở rộng dựa trên Authentication Base.
-
----
-
-## 2.1. Tạo Ticket hỗ trợ mới
-
-### User Story
-
-> Là Sinh viên, tôi muốn chọn Phòng ban / Danh mục và nhập nội dung cần hỗ trợ để gửi yêu cầu lên hệ thống.
-
-### Input Fields
-
-| Field | Type | Required | Validation |
-|---|---|---:|---|
-| `department_id` | Dropdown | Yes | Chọn từ danh sách Phòng ban khả dụng |
-| `category_id` | Dropdown | Yes | Phải thuộc `department_id` đã chọn |
-| `title` | Text Input | Yes | Từ `10–150` ký tự |
-| `description` | Textarea | Yes | Từ `20–2000` ký tự |
-| `attachments` | File Upload | No | Tối đa `3 file`, `5 MB/file` |
-
-### Acceptance Criteria
-
-#### AC 1.1
-
-Khi Sinh viên bấm:
+**AC 1.2:** Nhập sai Mật khẩu hoặc Email không tồn tại → Báo lỗi chung:
 
 ```text
-Gửi yêu cầu
+"Thông tin đăng nhập không chính xác"
 ```
 
-hệ thống tạo Ticket mới với:
-
-```text
-status = PENDING
-```
-
-#### AC 1.2
-
-Sau khi tạo Ticket thành công:
-
-- Hiển thị `Ticket ID`
-- Gửi Email xác nhận đến Email của Sinh viên
+**AC 1.3:** Nhập sai mật khẩu **5 lần liên tiếp** → Tự động khóa tài khoản tạm thời **15 phút**.
 
 ---
 
-## 2.2. Theo dõi Ticket
+## 1.2. Đổi mật khẩu (Change Password)
 
-### Acceptance Criteria
+**User Stories:** Mọi người dùng sau khi đăng nhập có thể chủ động đổi mật khẩu cá nhân.
 
-#### AC 2.1
+### Acceptance Criteria (AC)
 
-Trang danh sách Ticket hiển thị:
+**AC 2.1:** Yêu cầu nhập:
 
-- Mã Ticket
-- Tiêu đề
-- Ngày tạo
-- Phòng ban phụ trách
-- Trạng thái
+- Mật khẩu cũ.
+- Mật khẩu mới.
+- Xác nhận mật khẩu mới.
 
-Trạng thái được hiển thị bằng **Badge màu tương ứng**.
-
-#### AC 2.2
-
-Trang chi tiết Ticket hiển thị **Timeline** toàn bộ quá trình xử lý từ lúc Ticket được tạo đến trạng thái hiện tại.
+**AC 2.2:** Mật khẩu mới không được trùng Mật khẩu cũ.
 
 ---
 
-## 2.3. Bổ sung thông tin Ticket
+# MODULE 2: PHÂN HỆ SINH VIÊN (STUDENT WORKSPACE)
 
-Chức năng này sử dụng cơ chế:
+Mở rộng trên Module 1: Sinh viên dùng Token xác thực để thực hiện các nghiệp vụ gửi đơn.
+
+## 2.1. Tạo Ticket hỗ trợ mới (Create Ticket)
+
+**User Stories:** Là Sinh viên, tôi muốn chọn phòng ban/danh mục và viết nội dung hỗ trợ để gửi lên hệ thống.
+
+### Input Fields & Validation
+
+| Trường dữ liệu | Kiểu dữ liệu | Bắt buộc | Điều kiện Validation / Ghi chú |
+|---|---|---|---|
+| `department_id` | Dropdown | Có | Chọn từ danh sách Phòng ban khả dụng |
+| `category_id` | Dropdown | Có | Thuộc `department_id` đã chọn |
+| `title` | Text Input | Có | Tối thiểu 10 ký tự, tối đa 150 ký tự |
+| `description` | Textarea | Có | Tối thiểu 20 ký tự, tối đa 2000 ký tự |
+| `attachments` | File Upload | Không | Tối đa 3 file, dung lượng 5MB/file |
+
+### Acceptance Criteria (AC)
+
+**AC 1.1:** Bấm **"Gửi yêu cầu"** → Tạo record trong DB với:
 
 ```text
-Append-only
+status = 'PENDING'
 ```
 
-Sinh viên **không sửa dữ liệu cũ** mà tạo thêm phản hồi mới.
+(Chờ tiếp nhận).
 
-### Điều kiện
+**AC 1.2:** Hệ thống trả về Ticket ID trên màn hình và gửi Email xác nhận ngắn gọn về email sinh viên.
 
-Ticket phải có trạng thái:
+---
+
+## 2.2. Theo dõi danh sách & Chi tiết Ticket (Ticket Tracking)
+
+### Acceptance Criteria (AC)
+
+**AC 2.1:** Trang danh sách hiển thị:
+
+- Mã Ticket.
+- Tiêu đề.
+- Ngày tạo.
+- Phòng ban phụ trách.
+- Trạng thái (được gắn Badge màu tương ứng).
+
+**AC 2.2:** Màn hình Chi tiết Ticket hiển thị luồng Timeline thời gian thực từ lúc tạo đến trạng thái hiện tại.
+
+---
+
+## 2.3. Bổ sung thông tin (Update Ticket Information)
+
+Chức năng này **KHÔNG sửa dữ liệu cũ** mà ghi thêm phản hồi mới (**Append-only**).
+
+**Điều kiện mở:** Ticket đang ở trạng thái:
 
 ```text
 WAITING_FOR_STUDENT
 ```
 
-### Acceptance Criteria
+(Chờ bổ sung).
 
-#### AC 3.1
+### Acceptance Criteria (AC)
 
-Sinh viên có thể nhập:
+**AC 3.1:** Sinh viên nhập Nội dung bổ sung và/hoặc File đính kèm mới → Bấm **"Gửi bổ sung"**.
 
-- Nội dung bổ sung
-- File đính kèm mới
-
-Sau đó chọn:
+**AC 3.2:** Hệ thống cập nhật:
 
 ```text
-Gửi bổ sung
+status = 'PROCESSING'
 ```
 
-#### AC 3.2
-
-Sau khi gửi thành công:
-
-```text
-status = PROCESSING
-```
-
-Hệ thống đồng thời gửi thông báo đến Nhân viên đang phụ trách Ticket.
+(Đang xử lý) và đẩy thông báo cho Nhân viên phụ trách.
 
 ---
 
-## 2.4. Đánh giá chất lượng dịch vụ
+## 2.4. Đánh giá chất lượng dịch vụ (CSAT Rating)
 
-### Điều kiện
-
-Ticket phải có:
+**Điều kiện mở:** Ticket ở trạng thái:
 
 ```text
-status = RESOLVED
+RESOLVED
 ```
 
-### Acceptance Criteria
+(Hoàn thành).
 
-#### AC 4.1
+### Acceptance Criteria (AC)
 
-Form đánh giá gồm:
+**AC 4.1:** Hiển thị Form Đánh giá:
 
-| Field | Required |
-|---|---:|
-| Rating `1–5 sao` | Yes |
-| Nhận xét | No |
+- Chọn số sao từ **1 đến 5 sao** — bắt buộc.
+- Nhận xét — không bắt buộc.
 
-#### AC 4.2
-
-Sau khi gửi đánh giá thành công:
-
-- Không thể gửi lại đánh giá
-- Form chuyển sang chế độ `Read-only`
+**AC 4.2:** Sau khi gửi đánh giá thành công, khóa Form (chỉ hiển thị dạng Read-only).
 
 ---
 
-# Module 3: Staff Workspace
+# MODULE 3: PHÂN HỆ NHÂN VIÊN (STAFF WORKSPACE)
 
-Module dành cho Nhân viên xử lý các Ticket do Sinh viên tạo.
+Mở rộng trên Module 2: Nhân viên tiếp nhận các Ticket đã được Sinh viên khởi tạo.
+
+## 3.1. Danh sách & Bộ lọc Queue phòng ban (Queue Management)
+
+### Acceptance Criteria (AC)
+
+**AC 1.1:** Nhân viên đăng nhập chỉ xem được các Ticket có:
+
+```text
+department_id = user.department_id
+```
+
+trùng với phòng ban của mình.
+
+**AC 1.2:** Bộ lọc hỗ trợ:
+
+- Lọc theo Trạng thái:
+  - Chờ tiếp nhận.
+  - Đang xử lý.
+  - Chờ bổ sung.
+- Lọc theo Khoảng thời gian.
+- Tìm kiếm theo Mã Ticket/Tiêu đề.
 
 ---
 
-## 3.1. Queue Management
+## 3.2. Tiếp nhận Ticket (Claim Ticket)
 
-### Acceptance Criteria
-
-#### AC 1.1
-
-Nhân viên chỉ xem được Ticket có:
+**Condition:** Ticket có:
 
 ```text
-ticket.department_id = current_user.department_id
+status = 'PENDING'
 ```
 
-#### AC 1.2
+### Acceptance Criteria (AC)
 
-Queue hỗ trợ:
-
-- Lọc theo trạng thái
-  - Chờ tiếp nhận
-  - Đang xử lý
-  - Chờ bổ sung
-- Lọc theo khoảng thời gian
-- Tìm kiếm theo:
-  - Mã Ticket
-  - Tiêu đề
-
----
-
-## 3.2. Tiếp nhận Ticket
-
-### Condition
-
-```text
-status = PENDING
-```
-
-### Acceptance Criteria
-
-#### AC 2.1
-
-Khi Nhân viên bấm:
-
-```text
-Tiếp nhận
-```
-
-hệ thống cập nhật:
+**AC 2.1:** Bấm **"Tiếp nhận"** → Cập nhật:
 
 ```text
 assignee_id = current_user.id
-status = PROCESSING
+status = 'PROCESSING'
 ```
 
-#### AC 2.2 – Race Condition Handling
+**AC 2.2: Race Condition Handling:** Nếu 2 nhân viên bấm **"Tiếp nhận"** cùng millisecond, hệ thống dùng **DB Lock**.
 
-Nếu hai Nhân viên cùng tiếp nhận một Ticket tại cùng thời điểm:
-
-- Database sử dụng Lock / Transaction để đảm bảo chỉ một người tiếp nhận thành công.
-- Người tiếp nhận sau nhận thông báo:
+Người bấm sau nhận thông báo:
 
 ```text
-Ticket đã được tiếp nhận bởi [Tên Nhân Viên]
+"Ticket đã được tiếp nhận bởi [Tên Nhân Viên 1]"
 ```
 
-- Giao diện tự động Refresh dữ liệu.
+và tự động Refresh giao diện.
 
 ---
 
-## 3.3. Yêu cầu Sinh viên bổ sung thông tin
+## 3.3. Yêu cầu Sinh viên bổ sung thông tin (Request Info)
 
-### Condition
+**Condition:** Ticket có:
 
 ```text
-status = PROCESSING
-AND
+status = 'PROCESSING'
+```
+
+và:
+
+```text
 assignee_id = current_user.id
 ```
 
-### Acceptance Criteria
+### Acceptance Criteria (AC)
 
-#### AC 3.1
-
-Nhân viên nhập lý do yêu cầu bổ sung.
-
-Sau khi xác nhận:
+**AC 3.1:** Nhân viên nhập Lý do yêu cầu bổ sung → Chuyển:
 
 ```text
-status = WAITING_FOR_STUDENT
+status = 'WAITING_FOR_STUDENT'
 ```
 
 ---
 
-## 3.4. Chuyển Ticket sang Phòng ban khác
+## 3.4. Chuyển tiếp Ticket sai thẩm quyền (Re-route Ticket)
 
-### Acceptance Criteria
+### Acceptance Criteria (AC)
 
-#### AC 4.1
-
-Nhân viên phải:
-
-1. Chọn Phòng ban mới
-2. Nhập lý do chuyển
-
-Sau đó hệ thống cập nhật:
+**AC 4.1:** Chọn Phòng ban mới + Nhập Lý do chuyển → Hệ thống cập nhật:
 
 ```text
-department_id = new_department_id
+department_id = new_dept_id
 assignee_id = NULL
-status = PENDING
+status = 'PENDING'
 ```
 
-Ticket sau đó xuất hiện trong Queue của Phòng ban mới.
+Ticket chuyển sang Queue của Phòng ban mới.
 
 ---
 
-## 3.5. Hoàn thành Ticket
+## 3.5. Hoàn thành Ticket (Resolve Ticket)
 
-### Acceptance Criteria
+### Acceptance Criteria (AC)
 
-#### AC 5.1
+**AC 5.1:** Nhân viên nhập:
 
-Nhân viên nhập:
+- Nội dung giải quyết — Bắt buộc.
+- File kết quả — Không bắt buộc.
 
-- Nội dung giải quyết — **Bắt buộc**
-- File kết quả — Không bắt buộc
-
-Sau khi hoàn thành:
+Sau đó chuyển:
 
 ```text
-status = RESOLVED
+status = 'RESOLVED'
 ```
 
 ---
 
-# Module 4: Manager Workspace
+# MODULE 4: PHÂN HỆ QUẢN LÝ (MANAGER WORKSPACE)
 
-Module Quản lý tổng hợp dữ liệu từ toàn bộ hệ thống để phục vụ báo cáo và quản trị.
+Mở rộng trên Module 1, 2, 3: Tổng hợp toàn bộ dữ liệu giao dịch để báo cáo và cấu hình.
 
----
+## 4.1. Dashboard Báo cáo & Thống kê (Analytics Dashboard)
 
-## 4.1. Analytics Dashboard
+**Dữ liệu đầu vào:** Toàn bộ bảng `Tickets` và `Ratings` đã sinh ra ở Module 2 & 3.
 
-### Nguồn dữ liệu
+### Acceptance Criteria (AC)
 
-Dashboard lấy dữ liệu từ:
+**AC 1.1:** Hiển thị **4 thẻ chỉ số tổng quan (KPI Cards):**
 
-```text
-Tickets
-Ratings
-```
+- Tổng số Ticket tiếp nhận (theo khoảng thời gian chọn).
+- Tỷ lệ xử lý đúng hạn (%) - Xác định Ticket quá hạn khi xử lý **>48 giờ làm việc** mà chưa chuyển `RESOLVED`.
+- Số lượng Ticket quá hạn hiện tại.
+- Điểm đánh giá hài lòng trung bình (**CSAT Score từ 1.0 đến 5.0**).
 
-### Acceptance Criteria
-
-#### AC 1.1 – KPI Cards
-
-Dashboard hiển thị **4 KPI chính**:
-
-| KPI | Mô tả |
-|---|---|
-| Tổng Ticket | Tổng số Ticket được tiếp nhận trong khoảng thời gian |
-| Tỷ lệ xử lý đúng hạn | % Ticket được xử lý trong thời gian SLA |
-| Ticket quá hạn | Số Ticket đang vượt thời gian xử lý |
-| CSAT Score | Điểm hài lòng trung bình từ `1.0–5.0` |
-
-### SLA Rule
-
-Ticket được xem là **quá hạn** nếu:
-
-```text
-Thời gian xử lý > 48 giờ làm việc
-AND
-status != RESOLVED
-```
-
-#### AC 1.2 – Biểu đồ
-
-Dashboard hiển thị biểu đồ cột:
-
-```text
-Số lượng Ticket theo từng Nhóm vấn đề
-```
+**AC 1.2:** Biểu đồ xu hướng: Biểu đồ cột thể hiện số lượng Ticket theo từng Nhóm vấn đề.
 
 ---
 
-## 4.2. Quản lý tài khoản & phân quyền
+## 4.2. Quản lý Tài khoản & Phân quyền (User Management)
 
-### Acceptance Criteria
+### Acceptance Criteria (AC)
 
-#### AC 2.1
+**AC 2.1:** Tạo mới / Chỉnh sửa tài khoản người dùng:
 
-Manager có thể tạo mới / chỉnh sửa:
+- Tên.
+- Email.
+- Chức vụ.
+- Vai trò:
+  - Student.
+  - Staff.
+  - Manager.
+- Phòng ban.
 
-- Tên
-- Email
-- Chức vụ
-- Vai trò
-- Phòng ban
-
-Các Role:
-
-```text
-STUDENT
-STAFF
-MANAGER
-```
-
-#### AC 2.2
-
-Manager có thể vô hiệu hóa tài khoản bằng:
-
-```text
-Soft Delete / Deactivate
-```
-
-Sau khi bị vô hiệu hóa:
-
-- Tài khoản không thể đăng nhập
-- Dữ liệu Ticket lịch sử vẫn được giữ nguyên
+**AC 2.2:** Vô hiệu hóa tài khoản (**Soft Delete / Deactivate**) → Tài khoản không thể đăng nhập, nhưng dữ liệu lịch sử Ticket cũ vẫn giữ nguyên.
 
 ---
 
-## 4.3. Quản lý danh mục hỗ trợ
+## 4.3. Quản lý Danh mục Hỗ trợ (Category Management)
 
-### Acceptance Criteria
+### Acceptance Criteria (AC)
 
-#### AC 3.1
+**AC 3.1:** Thêm mới / Sửa tên / Ẩn (**Deactivate**) các Nhóm vấn đề thuộc từng Phòng ban.
 
-Manager có thể:
+**AC 3.2:** Khi một Nhóm vấn đề bị Ẩn:
 
-- Thêm Nhóm vấn đề
-- Sửa tên Nhóm vấn đề
-- Ẩn / Deactivate Nhóm vấn đề
-
-Mỗi Category thuộc một Phòng ban cụ thể.
-
-#### AC 3.2
-
-Khi Category bị `Deactivate`:
-
-- Không xuất hiện trong Dropdown tạo Ticket mới của Sinh viên.
-- Các Ticket cũ thuộc Category đó vẫn được giữ nguyên.
-- Vẫn hiển thị trong:
-  - Tra cứu Ticket
-  - Lịch sử
-  - Báo cáo
-  - Dashboard
-
----
-
-# IV. Tổng quan Module Dependency
-
-```mermaid
-flowchart LR
-    M1["Module 1<br/>Authentication"] --> M2["Module 2<br/>Student Workspace"]
-    M1 --> M3["Module 3<br/>Staff Workspace"]
-    M2 --> M3
-    M1 --> M4["Module 4<br/>Manager Workspace"]
-    M2 --> M4
-    M3 --> M4
-```
-
-| Module | Phụ thuộc | Vai trò |
-|---|---|---|
-| Module 1 | Không | Authentication & Authorization |
-| Module 2 | Module 1 | Sinh viên tạo và theo dõi Ticket |
-| Module 3 | Module 1, 2 | Nhân viên xử lý Ticket |
-| Module 4 | Module 1, 2, 3 | Quản trị và báo cáo |
-
----
-
-# V. Core Business Rules
-
-1. Mọi Ticket phải có một `department_id`.
-2. Ticket mới luôn bắt đầu với trạng thái `PENDING`.
-3. Chỉ Ticket `PENDING` mới có thể được Claim.
-4. Chỉ Nhân viên đang được assign mới có quyền xử lý Ticket.
-5. Sinh viên không được chỉnh sửa lịch sử Ticket.
-6. Mọi phản hồi mới phải được lưu theo cơ chế **Append-only**.
-7. Ticket chỉ được chuyển trạng thái theo **State Machine**.
-8. Ticket `WAITING_FOR_STUDENT` quá 7 ngày sẽ tự động `CLOSED`.
-9. Ticket lịch sử không bị xóa khi User / Category bị Deactivate.
-10. Manager có quyền xem dữ liệu tổng hợp nhưng không làm thay đổi lịch sử xử lý Ticket.
+- Nó không xuất hiện ở Dropdown chọn của Sinh viên khi tạo đơn mới.
+- Toàn bộ Ticket cũ thuộc Nhóm này vẫn hiển thị bình thường ở màn hình tra cứu/báo cáo.
